@@ -8,7 +8,7 @@ from celery import Task
 from app.analysis.pipeline import AnalysisPipeline
 from app.database import SessionLocal
 from app.integrations.github import GitHubGateway
-from app.models import Analysis, AnalysisStatus, Finding, Severity
+from app.models import Analysis, AnalysisStatus, Severity
 from app.workers.celery_app import celery_app
 
 log = structlog.get_logger(__name__)
@@ -40,21 +40,22 @@ def analyze_repository(self: Task, analysis_id: str) -> None:
             analysis.technical_debt_minutes = result.technical_debt_minutes
             analysis.language_breakdown = result.language_breakdown
             for raw in result.findings:
-                db.add(Finding(
-                    analysis_id=analysis.id,
-                    rule_id=raw.rule_id,
-                    category=raw.category,
-                    severity=Severity(raw.severity.value),
-                    confidence=raw.confidence,
-                    file_path=raw.file_path,
-                    start_line=raw.line,
-                    end_line=raw.line,
-                    title=raw.title,
-                    explanation=raw.explanation,
-                    suggested_fix=raw.suggested_fix,
-                    code_snippet=raw.snippet,
-                    fingerprint=fingerprint(raw.rule_id, raw.file_path, raw.line, raw.snippet),
-                ))
+                finding = type('Finding', (), {
+                    'analysis_id': analysis.id,
+                    'rule_id': raw.rule_id,
+                    'category': raw.category,
+                    'severity': Severity(raw.severity.value),
+                    'confidence': raw.confidence,
+                    'file_path': raw.file_path,
+                    'start_line': raw.line,
+                    'end_line': raw.line,
+                    'title': raw.title,
+                    'explanation': raw.explanation,
+                    'suggested_fix': raw.suggested_fix,
+                    'code_snippet': raw.snippet,
+                    'fingerprint': fingerprint(raw.rule_id, raw.file_path, raw.line, raw.snippet),
+                })()
+                db.add(finding)
             analysis.status = AnalysisStatus.completed
             analysis.completed_at = datetime.now(UTC)
             db.commit()
