@@ -72,4 +72,3 @@ def publish_pull_request_review(analysis_id: UUID, payload: PullRequestReviewReq
     except GitHubGatewayError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
     return PullRequestReviewResult(submitted=len(comments), skipped=len(payload.finding_ids) - len(comments))
-
