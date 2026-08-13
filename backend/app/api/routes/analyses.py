@@ -8,7 +8,7 @@ from app.api.routes.repositories import owned_repository
 from app.database import get_db
 from app.dependencies import current_user
 from app.integrations.github import GitHubGateway, GitHubGatewayError
-from app.models import Analysis, Finding, Repository, User
+from app.models import Analysis, Repository, User
 from app.schemas import AnalysisCreate, AnalysisDetail, AnalysisOut, PullRequestReviewRequest, PullRequestReviewResult
 from app.workers.tasks import analyze_repository
 
